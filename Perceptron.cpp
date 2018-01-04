@@ -1,5 +1,7 @@
 /*
 	This code is a Perceptron, a type of neural network.
+	Explanation of the project:
+
 	The program does not know the mathematical functions neither the process.
 	The goal for this network is to get the right value without knowing
 	any of the functions. But here is the process anyways:
@@ -11,8 +13,12 @@
 	The result will be rounded up to the nearest integer if it is not a real number
 	and if that result is even, the value of the output neuron will be 1, else a 0.
 
-	In the file configuration.txt the values of the omegas and the umbral are stored
-	a line for each neuron, and an "l" for an end of layer. There are 4 layers
+	In the file configuration.txt the values of the omegas and the umbral are stored.
+	There is a line for each neuron, and a txt file per layer.
+
+	Pablo Moreno
+	04/01/2018
+	Version 2.0
 */
 #include<iostream>
 #include<string>
@@ -256,28 +262,132 @@ float Sigmoid(float fNumber)
 	fResult = 1 / (1 + pow(M_E, -fNumber));
 
 	//Returning the result
+	return fResult;
 }
 
+/*
+	Function that calculates the output "a" of each neuron
+	and modify the variable fA of the current neuron
+
+	Parameters:
+		neuron[]		Array of objects of the class Neuron
+		iArrNumber[]		Array with the number of neurons of each layer
+		iArrSum[]		Array that stores the accumulative diferences of neurons per layer
+		iK			The layer of the targeted neuron (counting from 0)
+		iI			The position of the targeted neuron in the layer (counting from 0)
+*/
+void Output(Neuron neuron[], int iArrNumber[], int iArrSum[], int iK, int iI)
+{
+	//Variable to store the sum
+	float iSum;
+	
+	//Variable to store the index of the neuron
+	int iPos;
+
+
+	//Determining the position of the neuron (counting from 0)
+	iPos = iArrSum[iK] + iI;
+
+
+	
+	//Adding the output of each neuron in the last layer multiplied times the delta
+	//In the first layer, we need to give some values
+	if(iK == 0)
+	{
+		//Asking and receiving the values of the iPos neuron
+		//This values should not be modified since its the input layer
+		//Neither the umbral should be added
+		cout << "Enter the value for the neuron #" << iPos + 1 << ": ";
+		cin >> neuron[iPos].fA;
+	}
+
+	else
+	{
+		//The variable will start with the value of the umbral
+		iSum = neuron[iPos].fUmbral;
+
+		//Making the iteration to add up each neccesary value
+		//The output of the neuron of the last layer times its omega
+		for(int i = 0; i < iArrNumber[iK - 1]; i++)
+		{
+			iSum += neuron[iPos].fArrOmega[i] * neuron[iArrSum[iK - 1] + i].fA;
+		}
+
+		//After the loop, save the value
+		neuron[iPos].fA = Sigmoid(iSum);
+	}
+}
+
+/*
+	Void that completes a whole iteration,
+	when it is called, the outputs of each neuron are gotten in
+	order until the output neuron. Its result will be displayed
+
+	Parameters:
+		neuron[]		Array of objects of the class Neuron
+		iArrNumber[]		Array with the number of neurons of each layer
+		iArrSum[]		Array that stores the accumulative diferences of neurons per layer
+*/
+void Iteration(Neuron neuron[], int iArrNumber[], int iArrSum[])
+{
+	//Calling the Output void for each neuron
+	//In this case, I use instruction by instruction instead of a loop because I would have needed more variables
+	//And even more lines of code, knowing that this Perceptron only has 8 neurons.
+
+	//1st layer(input)
+	Output(neuron, iArrNumber, iArrSum, 0, 0);
+	Output(neuron, iArrNumber, iArrSum, 0, 1);
+	Output(neuron, iArrNumber, iArrSum, 0, 2);
+
+	//2nd layer
+	Output(neuron, iArrNumber, iArrSum, 1, 0);
+	Output(neuron, iArrNumber, iArrSum, 1, 1);
+
+	//3rd layer
+	Output(neuron, iArrNumber, iArrSum, 2, 0);
+	Output(neuron, iArrNumber, iArrSum, 2, 1);
+
+	//4th layer(output)
+	Output(neuron, iArrNumber, iArrSum, 3, 0);
+
+	//Displaying the result
+	cout << "The result of the output neuron is: " << neuron[7].fA;
+}
+
+/*
+	This is the main.
+	here some important variables are declared and important functions
+	and instructions are performed in order to create the neurons
+	and assign the values for each one.
+
+	Parameters:
+		none
+
+	Returns:
+		0
+*/
 int main()
 {
-	//iCounter to control a cycle
-	int iCounter = 0;
-
-	//Helping variable
-	int iN = 0;
-
-
 	//Array with the number of neuron per layer, including the one of the
 	//input and the output
-	int iArr[4] = {3, 2, 2, 1};
+	int iArrNumber[4] = {3, 2, 2, 1};
 
-	int iTotalNeurons = iArr[0] + iArr[1] + iArr[2] + iArr[3];
+	//Array that will help us to have less code, the number of the layer
+	//is used as the index in order to know how much we need to add up
+	int iArrSum[4] = {0, 3, 5, 7};
+
+	//Variable to store the total number of neurons
+	int iTotalNeurons = iArrNumber[0] + iArrNumber[1] + iArrNumber[2] + iArrNumber[3];
+
+	//Variable to continue or stop the program
+	char cContinue = 'e';
 
 	//Creating all the neurons
 	Neuron neuron[iTotalNeurons];
 
 	//Setting up the values for each neuron
-	//I will make a loop for this later
+	//In this case, I use instruction by instruction instead of a loop because I would have needed more variables
+	//And even more lines of code, knowing that this Perceptron only has 8 neurons.
 	neuron[0].get_values(0, 0);
 	neuron[1].get_values(0, 1);
 	neuron[2].get_values(0, 2);
@@ -286,6 +396,18 @@ int main()
 	neuron[5].get_values(2, 0);
 	neuron[6].get_values(2, 1);
 	neuron[7].get_values(3, 0);
+	
+	//Making the process
+	do
+	{
+		//Making the Iteration
+		Iteration(neuron, iArrNumber, iArrSum);
+
+		//Asking the user if he/she wants to continue
+		cout << endl << "Press E to exit, press any other letter to continue: ";
+		cin >> cContinue;
+	}//while te user does not type an e or a E
+	while(!(cContinue == 'e' || cContinue == 'E'));
 
 	//End
 	return 0;
