@@ -19,11 +19,109 @@
 #include<fstream>
 #include<stdio.h>
 #include<stdlib.h>
+#include<math.h>
 
 using namespace std;
+/*
+	This functions receives a line from the text
+	and change the "numbers" into numbers and then
+	assigns the values to the variables of the neurons
+
+	Parameters:
+		sFloat		The string
+		fUmbral		The umbral of the neuron
+		fArrOmega[]	Array with the weights of the connections of the neurons
+		iArrSpaces[]	Array with the index that stores a space
+
+*/
+void String_to_float(string &sFloat, float &fUmbral, float fArrOmega[], int iArrSpaces[])
+{
+	//iControl to help with the indexes of iArrSpaces
+	int iControl = 0;
+
+	//iCounter to control the chars of the sFloat
+	int iCounter = 0;
+
+	//Factor that will help while making the float
+	float fFactor = 1;
+
+	//Variable to store a number at a time
+	float fNumber = 0;
+
+	//Assigning the Umbral
+	while(iCounter < iArrSpaces[iControl])
+	{
+		//Checking that we are not using the dot
+		if(sFloat[iCounter] != '.')
+		{
+			//Converting the first "number" into a float
+			fNumber += (sFloat[iCounter] - '0') * fFactor;
+
+			//Changing the factor
+			fFactor = fFactor/10;
+		}
+
+		//Increasing the counter
+		iCounter++;
+	}
+
+	//Assigning the number to the Umbral
+	fUmbral = fNumber;
+
+	//iControl will increase
+	iControl++;
+
+	//The factor will be 1 again
+	fFactor = 1;
+
+	//Resetting the fNumber
+	fNumber = 0;
+
+	//Increasing the counter to not use the space
+	iCounter++;
+
+	//Assigning all the Omegas
+	while(iCounter < sFloat.size())
+	{
+		//If iCounter position is less than iArrSpaces[iControl]
+		if(iCounter < iArrSpaces[iControl])
+		{
+			//If the char is not a dot
+			if(sFloat[iCounter] != '.')
+			{
+				//Add it to fNumber
+				fNumber += (sFloat[iCounter] - '0') * fFactor;
+
+				//Change the factor
+				fFactor = fFactor / 10;
+			}
+		}
+
+		//Else, if it is in the space
+		else
+		{
+			//Assign the value of fNumber to fArrOmega[iControl - 1]
+			//There are 3 Omegas and 4 values that iControl takes charge of
+			//That is why there is a -1
+			fArrOmega[iControl - 1] = fNumber;
+
+			//Reset the factor
+			fFactor = 1;
+
+			//Reset fNumber
+			fNumber = 0;
+
+			//Increase iControl
+			iControl++;
+		}
+				
+		//Increase the counter
+		iCounter++;
+	}
+}
 
 /*
-	Creating the class neuron
+	Creating the class Neuron
 	by default it will have 3 omegas, but some neurons
 	only need 2
 */
@@ -35,7 +133,11 @@ class Neuron
 	public: float fArrOmega[3];
 	public: float fA;
 
-	//ifstream fConfiguration;
+	//Counter of iLine
+	int iLineC;
+
+	//There are 4 spaces per line(neuron)
+	int iArrSpaces[4];
 
 	//String to store a line
 	string sLine;
@@ -43,20 +145,19 @@ class Neuron
 	//Name of the file
 	string sName;
 
-	//char* to store the number from the txt
-	string sNumber; 
+
 
 	//Public functions of the class neuron
 	public:
 
 		//This is a constructor that gets executed when an object of the class
 		//is created. That is why it is called the same
-		//Neuron(ifstream &fConfiguration)
-		//{
-
-		//}
+		Neuron()
+		{
+			iLineC = 0;
+		}
 		//Void to get and set the values from the configuration.txt
-		void get_values(int iN)
+		void get_values(int iN, int iLine)
 		{
 			
 			//Choosing the file name
@@ -86,49 +187,42 @@ class Neuron
 			//Opening the file configuration.txt
 			ifstream fConfiguration(sName.c_str());
 
-			//Counter to assing the value to a specefic Omega
-			int iCounter = -1;
+			//Counter to manage the indexes of iArrSpaces
+			int iCounter;
 
 			//While there are lines
 			while(getline(fConfiguration, sLine))
 			{
-				//Go throught the whole line char by char
-				for(int i = 0; i < sLine.size(); i++)
+				//If we are in the line #iLine
+				if(iLineC == iLine)
 				{
-					//If it is not a space
-					if(sLine[i] != ' ')
+					//iCounter will be 0
+					iCounter = 0;
+
+					//Get all the index whose char is a space
+					for(int i = 0; i < sLine.size(); i++)
 					{
-						//Store that value in the string sNumber
-						sNumber.append(sLine[i]);
-						//cout << sNumber;
-
-					}
-
-					//Else if the counter is less than 3
-					else if(iCounter < 3)
-					{
-						//If the counter is -1
-						if(iCounter == -1)
+						if(sLine[i] == ' ')
 						{
-							//Convert the string  sLine into a float
-							//and store it in the fUmbral
-							//fUmbral = atof(sNumber);
+							iArrSpaces[iCounter] = i;
+							iCounter++;
 						}
-
-						//Else
-						else
-						{
-							//Store it into the fArrOmega[iCounter]
-							//fArrOmega[iCounter] = atof(sNumber);
-							//cout << "fArrOmega[" << iCounter << "] is: " << fArrOmega[iCounter];
-						}
-
-						//Clean the string
-						sNumber = '';
-						//Increase the counter
-						iCounter++;
 					}
+			
+					//Changing the values
+					String_to_float(sLine, fUmbral, fArrOmega, iArrSpaces);
+			/*
+					cout << "Umbral is: " << fUmbral << endl;
+					cout << "Omega1 is: " << fArrOmega[0] << endl;
+					cout << "Omega2 is: " << fArrOmega[1] << endl;
+					cout << "Omega3 is: " << fArrOmega[2] << endl;
+			*/
 				}
+
+				
+					//Increase iLineC
+					iLineC++;
+				
 			}
 
 			//Close the file
@@ -143,7 +237,26 @@ class Neuron
 		
 };
 
-//Void to create all the objects
+/*
+	Function that takes a number and evaluate it in the Sigmoid function.
+	This function gives as a result a number between 0 and 1
+
+	Parameters:
+		fNumber		An input number
+
+	Returns:
+		fResult		The output
+*/
+float Sigmoid(float fNumber)
+{
+	//Variable to store the result
+	float fResult;
+
+	//Evaluating in the function
+	fResult = 1 / (1 + pow(M_E, -fNumber));
+
+	//Returning the result
+}
 
 int main()
 {
@@ -164,25 +277,16 @@ int main()
 	Neuron neuron[iTotalNeurons];
 
 	//Setting up the values for each neuron
-	for(int i = 0; i < iTotalNeurons; i++)
-	{
-		neuron[i].get_values(iCounter);
-		cout << "Umbral is: " << neuron[i].fUmbral;
+	//I will make a loop for this later
+	neuron[0].get_values(0, 0);
+	neuron[1].get_values(0, 1);
+	neuron[2].get_values(0, 2);
+	neuron[3].get_values(1, 0);
+	neuron[4].get_values(1, 1);
+	neuron[5].get_values(2, 0);
+	neuron[6].get_values(2, 1);
+	neuron[7].get_values(3, 0);
 
-		if(iN < iArr[iCounter])
-		{
-
-			iN++;
-		}
-
-		else
-		{
-			iN = 1;
-			iCounter++;
-		}
-		
-	}
-	
 	//End
 	return 0;
 }
