@@ -29,7 +29,7 @@
 
 using namespace std;
 /*
-	This functions receives a line from the text
+	This function receives a line from the text
 	and change the "numbers" into numbers and then
 	assigns the values to the variables of the neurons
 
@@ -170,7 +170,6 @@ class Neuron
 			if(iN == 0)
 			{
 				sName = "configuration0.txt";
-
 			}
 
 			else if(iN == 1)
@@ -266,6 +265,52 @@ float Sigmoid(float fNumber)
 }
 
 /*
+	Function to scale the values. The user will be able to type values bigger than 1,
+	but the program should to the work by them, and we know that the neurons need a value
+	between 0 and 1, so instead of having several cases and make a scale for each variable
+	(That is how is made in a lot of perceptrons), lets make a scale for the whole set of data
+	The bigger value will be 1, the smaller will be 0. So we first need the tree input values
+	to scale them.
+
+	Parameters:
+		neuron[]		Array of the objects of the class Neuron
+*/
+void Scale(Neuron neuron[])
+{
+	//Variable to store the maximum value
+	float fMax;
+
+	//Variable to store the minimun value
+	float fMin;
+
+	//Both will first store the input value of the first neuron
+	fMax = neuron[0].fA;
+	fMin = fMax;
+	
+	//Search in the other two values
+	for(int i = 1; i < 3; i++)
+	{	
+		//For the maximum
+		if(neuron[i].fA > fMax)
+		{
+			fMax = neuron[i].fA;
+		}
+
+		//And for the minimum
+		if(neuron[i].fA < fMin)
+		{
+			fMin = neuron[i].fA;
+		}
+	}
+
+	//Scale them with the following formula
+	for(int i = 0; i < 3; i++)
+	{
+		neuron[i].fA = (neuron[i].fA - fMin) / (fMax - fMin);
+	}
+}
+
+/*
 	Function that calculates the output "a" of each neuron
 	and modify the variable fA of the current neuron
 
@@ -299,6 +344,13 @@ void Output(Neuron neuron[], int iArrNumber[], int iArrSum[], int iK, int iI)
 		//Neither the umbral should be added
 		cout << "Enter the value for the neuron #" << iPos + 1 << ": ";
 		cin >> neuron[iPos].fA;
+
+		//After receiving the value of the last input neuron
+		if(iPos == 2)
+		{
+			//Scale them
+			Scale(neuron);
+		}
 	}
 
 	else
@@ -318,16 +370,7 @@ void Output(Neuron neuron[], int iArrNumber[], int iArrSum[], int iK, int iI)
 	}
 }
 
-/*
-	Void that completes a whole iteration,
-	when it is called, the outputs of each neuron are gotten in
-	order until the output neuron. Its result will be displayed
 
-	Parameters:
-		neuron[]		Array of objects of the class Neuron
-		iArrNumber[]		Array with the number of neurons of each layer
-		iArrSum[]		Array that stores the accumulative diferences of neurons per layer
-*/
 void Iteration(Neuron neuron[], int iArrNumber[], int iArrSum[])
 {
 	//Calling the Output void for each neuron
@@ -353,6 +396,41 @@ void Iteration(Neuron neuron[], int iArrNumber[], int iArrSum[])
 	//Displaying the result
 	cout << "The result of the output neuron is: " << neuron[7].fA;
 }
+
+/*
+	Function to obtain the fourth delta. The deltas will help us to modify the omegas
+	in order to train the neural net and reduce the error. In this case the fourth delta
+	will help us to modify the omegas that connect the third with the fourth layer.
+	After obtaining the fourth delta, if we want to modify a Omega, the result will be
+	multiplied times the output value of the neuron that is making the synapse with
+	the neuron of the following layer; if we want to modify the umbral, the function
+	will just return the fourth delta. This function would work even if there is more
+	than one output neuron
+
+	Parameters:
+		neuron[]		Array of objects of the class Neuron
+		fY			Result of the output neuron
+
+	Returns:
+		fThirdLayerD		float value with the result needed to modify an omega or an umbral of the third layer
+*/
+float ThirdLayerDerivative(Neuron neuron[])
+{
+	//Variable to store the result
+
+	//
+}
+
+/*
+	Void that completes a whole iteration,
+	when it is called, the outputs of each neuron are gotten in
+	order until the output neuron. Its result will be displayed
+
+	Parameters:
+		neuron[]		Array of objects of the class Neuron
+		iArrNumber[]		Array with the number of neurons of each layer
+		iArrSum[]		Array that stores the accumulative diferences of neurons per layer
+*/
 
 /*
 	This is the main.
