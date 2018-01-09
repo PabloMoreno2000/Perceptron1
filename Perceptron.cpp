@@ -417,14 +417,11 @@ void Iteration(Neuron neuron[], int iArrNumber[], int iArrSum[])
 
 	Parameters:
 		neuron[]		Array of objects of the class Neuron
-		fS			Result of the output neuron
-		iJ			Neuron number from where the connection starts, could be 1 or 2(Counting from 1)
 		
-
 	Returns:
 		fFourthDelta		float value with the result needed to modify an omega or an umbral of the third layer
 */
-float FourthDelta(Neuron neuron[], float fS, int iJ)
+float FourthDelta(Neuron neuron[])
 {
 	//Variable to store the result
 	float fFourthDelta = 0;
@@ -434,7 +431,7 @@ float FourthDelta(Neuron neuron[], float fS, int iJ)
 
 	//Calculating the result
 	//The -1 after the iJ is because the user counts starting from 1 not from 0
-	fFourthDelta = neuron[iArrSum[2] + iJ - 1].fA * fY * (1 - fY) * -(fS - fY);
+	fFourthDelta = fY * (1 - fY) * -(neuron[iArrSum[3]].fA - fY);
 
 	//Returning the result
 	return fFourthDelta;
@@ -448,13 +445,12 @@ float FourthDelta(Neuron neuron[], float fS, int iJ)
 	Parameters:
 		neuron[]		Array of objects of the class Neuron
 		iJ			Neuron number from where the connection starts(counting from 1)
-		iI			Neuron number from where the connection finishes, could be 1 or 2(Counting from 1)
-		fS			Result of the output neuron
+		iI			Neuron number from where the connection finishes(Counting from 1)
 		
 	Returns:
 		fThirdDelta		The value of the third delta
 */
-float ThirdDelta(Neuron neuron[], int iJ, int iI, float fS)
+float ThirdDelta(Neuron neuron[], int iJ, int iI)
 {
 	//Variable to store the result
 	float fThirdDelta = 0;
@@ -467,22 +463,56 @@ float ThirdDelta(Neuron neuron[], int iJ, int iI, float fS)
 
 	//Calculating the result
 	//First we make the necessary loop to obtain the right result
-	//Going from the neuron 0 to the neuron #(the number of neurons of the last layer(1))
+	//The loop is not neccesary thanks to the net structure, but I will leave it in case
+	//of a future moditication
 	for(int i = iArrSum[3]; i < iArrSum[3] + iArrN[3]; i++)
 	{
-		//Is -3 because:
-			//1. The count of iI starts from 1 and neuron[].fArrOmega from 0
-			//2. Since the difference from the first neuron of the third layer
-			   //to the last neuron is 2, we need to neutralize that difference with a -2
-		fThirdDelta += neuron[iArrSum[3]].fArrOmega[iArrSum[3] - iArrSum[3] + iI - 3] * FourthDelta(neuron, fS, iI);
+		fThirdDelta += neuron[iArrSum[3]].fArrOmega[iI - 1] * FourthDelta(neuron);
 	}
 
 	//Then we multiply that result times the other values
-	//fThirdDelta *= 
+	fThirdDelta *= neuron[iArrSum[2] + iI - 1].fA * (1 - neuron[iArrSum[2] + iI - 1].fA);
 
 	//Returning the result
+	return fThirdDelta;
 }
 
+/*
+	Function to get the second delta. The second delta will be used later to change
+	any value of an omega between the first and the second layer, or an umbral of the
+	second layer.
+
+	Parameters:
+		neuron[]	Array of objects of the class Neuron
+		iJ		Neuron# (1 - 3), first layer
+		iK		Neuron# (1 - 2), second layer
+
+	Returns:
+		fSecondDelta	The value of the second delta
+*/
+float SecondDelta(Neuron neuron[], int iJ, int iK)
+{
+	//Declaring the variable to store the result
+	float fSecondDelta = 0;
+
+	//Array that shows how many neurons we need to add up if we want to go to the next layer
+	int iArrSum[4] = {0, 3, 5, 7};
+
+	//Array with the number of neurons per layer(counting from 1)
+	int iArrN[4] = {3, 2, 2, 1};
+
+	//Making the summation
+	for(int i = 0; i < iArrN[2]; i++)
+	{
+		fSecondDelta += neuron[iArrSum[2] + i].fArrOmega[iK - 1] * ThirdDelta(neuron, i + 1, iArrN[3]);
+	}
+
+	//Multypling times the other values
+	fSecondDelta *= neuron[iArrSum[1] + iK - 1].fA * (1 - neuron[iArrSum[1] + iK - 1].fA);
+
+	//Returning the result
+	return fSecondDelta;
+}
 
 
 /*
