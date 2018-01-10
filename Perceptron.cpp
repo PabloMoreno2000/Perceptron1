@@ -622,7 +622,7 @@ void UmbralGetValues(int &iLayer, int &iOmegaS)
 		iOmegaS		Variable to store the #neuron where the umbral is
 		fRate		Variable to control how much the omega or the umbral will change	
 */
-void OmegaChangeValue(Neuron neuron[], int iLayer, int iOmegaS, float fRate)
+void UmbralChangeValue(Neuron neuron[], int iLayer, int iOmegaS, float fRate)
 {
 	//Array that will help us to have less code, the number of the layer
 	//is used as the index in order to know how much we need to add up
