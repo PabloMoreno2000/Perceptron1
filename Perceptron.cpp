@@ -281,36 +281,46 @@ float Sigmoid(float fNumber)
 */
 void Scale(Neuron neuron[])
 {
-	//Variable to store the maximum value
-	float fMax;
+	//Variable to store the index of th maximum value
+	int iMax;
 
-	//Variable to store the minimun value
-	float fMin;
+	//Variable to store the index of the minimun value
+	int iMin;
 
 	//Both will first store the input value of the first neuron
-	fMax = neuron[0].fA;
-	fMin = fMax;
+	iMax = 0;
+	iMin = iMax;
 	
 	//Search in the other two values
 	for(int i = 1; i < 3; i++)
 	{	
 		//For the maximum
-		if(neuron[i].fA > fMax)
+		if(neuron[i].fA > neuron[iMax].fA)
 		{
-			fMax = neuron[i].fA;
+			iMax = i;
 		}
 
 		//And for the minimum
-		if(neuron[i].fA < fMin)
+		if(neuron[i].fA < neuron[iMin].fA)
 		{
-			fMin = neuron[i].fA;
+			iMin = i;
 		}
 	}
 
 	//Scale them with the following formula
 	for(int i = 0; i < 3; i++)
 	{
-		neuron[i].fA = (neuron[i].fA - fMin) / (fMax - fMin);
+		//Checking to not be dividing by 0
+		if( neuron[iMax].fA != neuron[iMin].fA)
+		{
+			neuron[i].fA = (neuron[i].fA - neuron[iMin].fA) / (neuron[iMax].fA - neuron[iMin].fA);
+		}
+	
+		//If this else is reached, that means, the three input values are equal
+		else
+		{
+			neuron[i].fA = 1;	
+		}
 	}
 }
 
@@ -430,16 +440,14 @@ float FourthDelta(Neuron neuron[])
 	int iArrSum[4] = {0, 3, 5, 7};
 
 	//Calculating the result
-	//The -1 after the iJ is because the user counts starting from 1 not from 0
-	fFourthDelta = fY * (1 - fY) * -(neuron[iArrSum[3]].fA - fY);
-
-	//Returning the result
-	return fFourthDelta;
+	{
+		fFourthDelta = fY * (1 - fY) * -(neuron[iArrSum[3]].fA - fY);
+	}
 }
 
 /*
 	Function to return the Third Delta. This delta is obtained when we want to derivate the error
-	with respect to an omega that is connecting the second and third laye. Or an umbral of the third
+	with respect to an omega that is connecting the second and third layer. Or an umbral of the third
 	layer
 
 	Parameters:
@@ -529,13 +537,122 @@ void OmegaGetValues(int &iLayer, int &iOmegaS, int &iOmegaE)
 	cin >> iLayer;
 
 	//Asking the #neuron of the left layer
-	cout <<"Enter the number of the neuron of the layer " << iLayer << "from where the omega comes out: ";
+	cout <<"Enter the number of the neuron of the layer " << iLayer << " from where the omega comes out: ";
 	cin >> iOmegaS;
 
 	//Asking the #neuron of the right layer
-	cout << "Enter the number of the neuron of the layer " << iLayer + 1 << "where the omega ends: ";
+	cout << "Enter the number of the neuron of the layer " << iLayer + 1 << " where the omega ends: ";
 	cin >> iOmegaE;
 
+}
+
+/*
+	Void to change the value of the Omega in the program
+
+	Parameters:
+		neuron[]	Array of objects of the class Neuron
+		iLayer		Variable to store the layer of the umbral or the group of omegas
+		iOmegaS		Variable to store the #neuron from where the omega starts
+		iOmegaE		Variable to store the #neuron from where the omega ends
+		fRate		Variable to control how much the omega or the umbral will change	
+*/
+void OmegaChangeValue(Neuron neuron[],int iLayer, int iOmegaS, int iOmegaE, float fRate)
+{
+	//Array that will help us to have less code, the number of the layer
+	//is used as the index in order to know how much we need to add up
+	int iArrSum[4] = {0, 3, 5, 7};
+
+	//Variable to store the result of the delta
+	float fD;
+
+	//If it is from the first group
+	if(iLayer == 1)
+	{
+		fD = SecondDelta(neuron, iOmegaS, iOmegaE);
+	}		
+
+	//If it is from the second group
+	else if(iLayer = 2)
+	{
+		fD = ThirdDelta(neuron, iOmegaS, iOmegaE);
+	}
+	//If it is from the third group
+	else
+	{
+		fD = FourthDelta(neuron);
+	}
+
+	//Printing fD
+	//cout << "fD is: " << fD;
+
+	//Printing the value
+	cout << "Before the process it was: " << neuron[iArrSum[iLayer] + iOmegaE -1].fArrOmega[iOmegaS - 1];
+
+	//Changing the process
+	neuron[iArrSum[iLayer] + iOmegaE -1].fArrOmega[iOmegaS - 1] = neuron[iArrSum[iLayer] + iOmegaE - 1].fArrOmega[iOmegaS - 1] - fRate * fD;
+
+	//Printing the value
+	cout << endl << "After the process it is: " << neuron[iArrSum[iLayer] + iOmegaE -1].fArrOmega[iOmegaS - 1] << endl;
+}
+
+/*
+	Void to ask some neccesary values in order to modify an Umbral
+
+	Parameters:
+		iLayer		Variable to store the layer of the umbral or the group of omegas
+		iOmegaS		Variable to store the #neuron that has the umbral
+*/
+void UmbralGetValues(int &iLayer, int &iOmegaS)
+{
+	//Asking the number of layer
+	cout << "In which layer the umbral is? ";
+	cin >> iLayer;
+
+	//Asking the number of neuron in that layer
+	cout << "What is the position of the neuron in that layer that has the umbral? ";
+	cin >> iOmegaS;
+}
+
+/*
+	Void to change the value of the umbral in the program
+
+	Parameters:
+		neuron[]	Array of objects of the class Neuron
+		iLayer		Variable to store the layer of the umbral
+		iOmegaS		Variable to store the #neuron where the umbral is
+		fRate		Variable to control how much the omega or the umbral will change	
+*/
+void OmegaChangeValue(Neuron neuron[], int iLayer, int iOmegaS, float fRate)
+{
+	//Array that will help us to have less code, the number of the layer
+	//is used as the index in order to know how much we need to add up
+	int iArrSum[4] = {0, 3, 5, 7};
+
+	//Variable to store the return of the delta function
+	float fD;
+
+	//It is important to remember that the input neurons have not a umbral
+	
+	//If it is from the second layer
+	if(iLayer == 2)
+	{
+
+	}
+
+	//or from the third
+	else if(iLayer == 3)
+	{
+
+	}
+
+	//or the last
+	else
+	{
+
+	}
+
+	//Making the operation
+	neuron[iArrSum[iLayer - 1] + iOmegaS - 1].fUmbral = neuron[iArrSum[iLayer -1] + iOmegaS - 1].fUmbral - fRate * fD;
 }
 
 /*
@@ -576,7 +693,14 @@ int main()
 	int iTarget;
 
 	//Variable to continue or stop the program
-	char cContinue;
+	char cContinue = '8';
+
+	//Variable to control how much the omega or the umbral will change
+	float fRate = 0.2;
+
+	//Variable to control what is going to be displayed
+	bool bControl = true;
+
 
 	//Creating all the neurons
 	Neuron neuron[iTotalNeurons];
@@ -596,49 +720,77 @@ int main()
 	//The welcome
 	cout << "Welcome to the Perceptron" << endl;
 
+	//Displaying the menu
+	cout << endl << "MENU:";
+	cout << endl << "Press O to modify an Omega";
+	cout << endl << "Press U to modify an Umbral";
+	cout << endl << "Press R to change the learning rate(bigger than 0, less than 1), right now it's " << fRate;
+	cout << endl << "Press E to exit";
+	cout << endl << "Press any other key to continue" << endl;
+
 
 	//Making the process
 	do
 	{
-		//Ask the desired result
-		do
+		if(bControl)
 		{
-			cout << "Enter the desired result for the output neuron(Beetwen 0 and 1): ";
-			cin >> fY;
-		}while(!(fY <= 1 && fY >= 0));
+			//Ask the desired result
+			do
+			{
+				cout << "Enter the desired result for the output neuron(Beetwen 0 and less than 1): ";
+				cin >> fY;
+			}while(!(fY < 1 && fY >= 0));
 
-		//Making the Iteration
-		Iteration(neuron, iArrNumber, iArrSum);
+			//Making the Iteration
+			Iteration(neuron, iArrNumber, iArrSum);
 
-		//Modyfing an Omega
+			//Changing bControl
+			bControl = false;
+		}
 
 
+		//If the user selects an omega
+		if(cContinue == 'O' || cContinue == 'o')
+		{
+			//Asking values
+			OmegaGetValues(iLayer, iOmegaS, iOmegaE);
 
-			//If it is from the first group
-			
-
-			//If it is from the second group
-
-			//If it is from the first group
-
+			//Changing the omega value
+			OmegaChangeValue(neuron, iLayer, iOmegaS, iOmegaE, fRate);
+		}
 			
 		
 
 		//Modyfing an Umbral
+		else if(cContinue == 'U' || cContinue == 'u')
+		{
+			//Asking the values
+			//UmbralGetValues(iLayer, iOmegaS);
 
-		//Displaying the menu
-		cout << endl << "Press O to modify an Omega";
-		cout << endl << "Press U to modify an Umbral";
-		cout << endl << "Press E to exit";
-		cout << endl << "Press any other key to continue" << endl;
+			//Changing the umbral value
+			//UmbralChangeValue(neuron, iLayer, iOmegaS, fRate);
+		}
+	
 
+		//With any other key, an iteration will be made again
+		//I will check the next condition to prevent displaying errors
+		//After the first iteration
+		else if(cContinue != '8')
+		{
+			bControl = true;
+		}
+
+		//To prevent some possible displaying errors, make bControl false here too
+		bControl = false;
+
+		//Asking him what he/she wants to do next
+		cout << endl << "Great, now please select an option from the menu: ";
 		cin >> cContinue;
+
+
 	}//while te user does not type an e or a E
 	while(!(cContinue == 'e' || cContinue == 'E'));
 
 	//End
 	return 0;
 }
-
-
-
