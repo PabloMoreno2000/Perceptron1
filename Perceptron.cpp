@@ -514,6 +514,29 @@ float SecondDelta(Neuron neuron[], int iJ, int iK)
 	return fSecondDelta;
 }
 
+/*
+	Void to ask some neccesary values in order to modify an Omega
+
+	Parameters:
+		iLayer		Variable to store the layer of the umbral or the group of omegas
+		iOmegaS		Variable to store the #neuron from where the omega starts
+		iOmegaE		Variable to store the #neuron from where the omega ends
+*/
+void OmegaGetValues(int &iLayer, int &iOmegaS, int &iOmegaE)
+{
+	//Asking which of the three groups
+	cout << "Which one of the three groups of Omegas do you want to modify?";
+	cin >> iLayer;
+
+	//Asking the #neuron of the left layer
+	cout <<"Enter the number of the neuron of the layer " << iLayer << "from where the omega comes out: ";
+	cin >> iOmegaS;
+
+	//Asking the #neuron of the right layer
+	cout << "Enter the number of the neuron of the layer " << iLayer + 1 << "where the omega ends: ";
+	cin >> iOmegaE;
+
+}
 
 /*
 	This is the main.
@@ -540,8 +563,20 @@ int main()
 	//Variable to store the total number of neurons
 	int iTotalNeurons = iArrNumber[0] + iArrNumber[1] + iArrNumber[2] + iArrNumber[3];
 
+	//Variable to store the layer of the umbral or the group of omegas
+	int iLayer;
+
+	//Variable to store the #neuron from where the omega starts
+	int iOmegaS;
+
+	//Variable to store the #neuron from where the omega ends
+	int iOmegaE;
+
+	//Target to modify, could be an Omega or an Umbral
+	int iTarget;
+
 	//Variable to continue or stop the program
-	char cContinue = 'e';
+	char cContinue;
 
 	//Creating all the neurons
 	Neuron neuron[iTotalNeurons];
@@ -558,14 +593,45 @@ int main()
 	neuron[6].get_values(2, 1);
 	neuron[7].get_values(3, 0);
 	
+	//The welcome
+	cout << "Welcome to the Perceptron" << endl;
+
+
 	//Making the process
 	do
 	{
+		//Ask the desired result
+		do
+		{
+			cout << "Enter the desired result for the output neuron(Beetwen 0 and 1): ";
+			cin >> fY;
+		}while(!(fY <= 1 && fY >= 0));
+
 		//Making the Iteration
 		Iteration(neuron, iArrNumber, iArrSum);
 
-		//Asking the user if he/she wants to continue
-		cout << endl << "Press E to exit, press any other letter to continue: ";
+		//Modyfing an Omega
+
+
+
+			//If it is from the first group
+			
+
+			//If it is from the second group
+
+			//If it is from the first group
+
+			
+		
+
+		//Modyfing an Umbral
+
+		//Displaying the menu
+		cout << endl << "Press O to modify an Omega";
+		cout << endl << "Press U to modify an Umbral";
+		cout << endl << "Press E to exit";
+		cout << endl << "Press any other key to continue" << endl;
+
 		cin >> cContinue;
 	}//while te user does not type an e or a E
 	while(!(cContinue == 'e' || cContinue == 'E'));
