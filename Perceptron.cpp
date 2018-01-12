@@ -582,9 +582,6 @@ void OmegaChangeValue(Neuron neuron[],int iLayer, int iOmegaS, int iOmegaE, floa
 		fD = FourthDelta(neuron);
 	}
 
-	//Printing fD
-	//cout << "fD is: " << fD;
-
 	//Printing the value
 	cout << "Before the process it was: " << neuron[iArrSum[iLayer] + iOmegaE -1].fArrOmega[iOmegaS - 1];
 
@@ -636,23 +633,27 @@ void UmbralChangeValue(Neuron neuron[], int iLayer, int iOmegaS, float fRate)
 	//If it is from the second layer
 	if(iLayer == 2)
 	{
-
+		fD = SecondDelta(neuron, iOmegaS, iOmegaS);
 	}
 
 	//or from the third
 	else if(iLayer == 3)
 	{
-
+		fD = ThirdDelta(neuron, iOmegaS, iOmegaS);
 	}
 
 	//or the last
 	else
 	{
-
+		fD = FourthDelta(neuron);
 	}
 
+	cout << "Before the process the umbral was: " << neuron[iArrSum[iLayer - 1] + iOmegaS - 1].fUmbral << endl;
 	//Making the operation
 	neuron[iArrSum[iLayer - 1] + iOmegaS - 1].fUmbral = neuron[iArrSum[iLayer -1] + iOmegaS - 1].fUmbral - fRate * fD;
+
+	cout << "After the process the umbral is: " << neuron[iArrSum[iLayer - 1] + iOmegaS - 1].fUmbral << endl;
+
 }
 
 /*
@@ -758,30 +759,24 @@ int main()
 			//Changing the omega value
 			OmegaChangeValue(neuron, iLayer, iOmegaS, iOmegaE, fRate);
 		}
-			
-		
 
 		//Modyfing an Umbral
 		else if(cContinue == 'U' || cContinue == 'u')
 		{
 			//Asking the values
-			//UmbralGetValues(iLayer, iOmegaS);
+			UmbralGetValues(iLayer, iOmegaS);
 
 			//Changing the umbral value
-			//UmbralChangeValue(neuron, iLayer, iOmegaS, fRate);
+			UmbralChangeValue(neuron, iLayer, iOmegaS, fRate);
 		}
-	
 
 		//With any other key, an iteration will be made again
 		//I will check the next condition to prevent displaying errors
 		//After the first iteration
-		else if(cContinue != '8')
+		else 
 		{
 			bControl = true;
 		}
-
-		//To prevent some possible displaying errors, make bControl false here too
-		bControl = false;
 
 		//Asking him what he/she wants to do next
 		cout << endl << "Great, now please select an option from the menu: ";
